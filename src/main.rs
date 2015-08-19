@@ -1,16 +1,19 @@
 extern crate num;
+extern crate rand;
 extern crate graphics;
 extern crate piston_window;
 extern crate opengl_graphics;
 
-use piston_window::*;
 use num::traits::*;
+use piston_window::*;
 
+#[derive(Clone,Copy)]
 struct Vec2<T> {
 	x : T,
 	y : T
 }
 
+#[derive(Clone,Copy)]
 struct Entity<T> {
 	position : Vec2<T>,
 	velocity : Vec2<T>,
@@ -21,56 +24,58 @@ struct Entity<T> {
 fn main() {
 	let window : PistonWindow = WindowSettings::new("space", [800, 600]).exit_on_esc(true).build().unwrap();
 	
-	let mut planets : Vec<Entity<f64>> = vec![];
-
-	
-	planets.push(Entity {
-		position: Vec2 {
-			x:0.0,
-			y:0.0
-		},
-		velocity: Vec2 {
-			x:1.0,
-			y:1.0
-		},
-		acceleration: Vec2 {
-			x:1.0,
-			y:1.0
-		},
-		mass:100.0
-	});
-	
+	let mut planets = gen_planets(10);
 
 	for e in window {
 		e.draw_2d(|context, device| {
 			clear([0.0, 0.0, 0.0, 1.0], device);
 			for planet in &mut planets {
-				integrate(planet, 0.1);
-				ellipse([1.0, 0.0, 0.0, 1.0], // red
-                      [planet.position.x, planet.position.y, 10.0, 10.0],
-                      context.transform, device);
+				planet.integrate(0.01);
+				ellipse(
+					[1.0, 0.0, 0.0, 1.0], // red
+                    [
+                    	planet.position.x*(e.size().width as f64),
+                    	planet.position.y*(e.size().height as f64),
+                    	10.0, 10.0
+                    ],
+                    context.transform, device
+                );
 			}
 		});
 	}
     println!("Hello, world!");
 }
 
-fn integrate(entity : &mut Entity<f64>, deltatime : f64) {
-	*entity = Entity {
-		position: Vec2 {
-			x:entity.position.x + entity.velocity.x * deltatime,
-			y:entity.position.y + entity.velocity.y * deltatime
-		},
-		velocity: Vec2 {
-			x:entity.velocity.x + entity.acceleration.x * deltatime,
-			y:entity.velocity.y + entity.acceleration.y * deltatime
-		},
-		acceleration: Vec2 {
-			x: entity.acceleration.x,
-			y: entity.acceleration.y
-		},
-		mass: entity.mass
-	};
+fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
+	let mut ret : Vec<Entity<f64>> = vec![];
+	for _ in 0..num_planets {
+		ret.push(
+			Entity {
+				position: Vec2 {
+					x:rand::random::<f64>(),
+					y:rand::random::<f64>()
+				},
+				velocity: Vec2 {
+					x:0.0,
+					y:0.0
+				},
+				acceleration: Vec2 {
+					x:rand::random::<f64>(),
+					y:rand::random::<f64>()
+				},
+				mass:100.0
+			}
+		)
+	}
+	return ret;
+}
+
+impl Entity<f64> {
+	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
+		self.position = self.position + self.velocity * deltatime;
+		self.velocity = self.velocity + self.acceleration * deltatime;
+		return self;
+	}
 }
 
 use std::ops::Add;
@@ -87,7 +92,15 @@ impl<N : Num> Mul for Vec2<N> {
 	type Output = Vec2<N>;
 
 	fn mul(self, rhs:Self::Output) -> Self::Output {
-		return Vec2 { x:self.x + rhs.x, y:self.y + rhs.y };
+		Vec2 { x:self.x * rhs.x, y:self.y * rhs.y }
+	}
+}
+
+impl Mul<f64> for Vec2<f64> {
+	type Output = Vec2<f64>;
+
+	fn mul(self, rhs:f64) -> Self::Output {
+		return Vec2 { x:self.x * rhs, y:self.y * rhs};
 	}
 }
 
