@@ -4,10 +4,9 @@ extern crate graphics;
 extern crate piston_window;
 extern crate opengl_graphics;
 
-use rand::Rng;
-use rand::distributions::{IndependentSample, Range};
 use num::traits::*;
 use piston_window::*;
+use rand::distributions::{IndependentSample, Range};
 
 #[derive(Clone,Copy)]
 struct Vec2<T> {
@@ -32,22 +31,30 @@ fn main() {
 	for e in window {
 		e.draw_2d(|context, device| {
 			clear([0.0, 0.0, 0.0, 1.0], device);
-			for planet in &mut planets {
-				planet.integrate(0.01).handle_wall_collision().integrate(0.01);
+			for i in 0..planets.len() {
+				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
+
+				for j in i+1..planets.len() {
+					let dist_vec = planets[i].position - planets[j].position;
+					if dist_vec.length2() < (planets[i].radius + planets[j].radius).powi(2) {
+						planets[i].velocity = -planets[i].velocity;
+						planets[j].velocity = -planets[j].velocity;
+					}
+				}
+
 				ellipse(
-					[1.0, 0.0, 0.0, 1.0], // red
+					[1.0, 0.0, 0.0, 1.0],
                     [
-                    	planet.position.x*(e.size().width as f64),
-                    	planet.position.y*(e.size().height as f64),
-                    	planet.radius*(e.size().width as f64),
-                    	planet.radius*(e.size().height as f64)
+                    	planets[i].position.x*(e.size().width as f64),
+                    	planets[i].position.y*(e.size().height as f64),
+                    	planets[i].radius*(e.size().width as f64),
+                    	planets[i].radius*(e.size().height as f64)
                     ],
                     context.transform, device
                 );
 			}
 		});
 	}
-    println!("Hello, world!");
 }
 
 fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
@@ -105,6 +112,12 @@ impl Entity<f64> {
 	}
 }
 
+impl Vec2<f64> {
+	fn length2(&self) -> f64 {
+		self.x * self.x + self.y * self.y
+	}
+}
+
 use std::ops::Add;
 impl<N : Num> Add for Vec2<N> {
 	type Output = Vec2<N>;
@@ -120,6 +133,15 @@ impl<N : Num> Sub for Vec2<N> {
 
 	fn sub(self, rhs:Self::Output) -> Self::Output {
 		return Vec2 { x:self.x - rhs.x, y:self.y - rhs.y };
+	}
+}
+
+use std::ops::Neg;
+impl Neg for Vec2<f64> {
+	type Output = Vec2<f64>;
+
+	fn neg(self) -> Self::Output {
+		return Vec2 { x: -self.x, y: -self.y};
 	}
 }
 
