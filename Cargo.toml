@@ -7,3 +7,4 @@ authors = ["Mischa Aster Alff <mischa.alff@gmail.com>"]
 piston2d-graphics = "0.4.1"
 piston2d-opengl_graphics = "0.6.0"
 piston_window = "0.15.0"
+num = "*"
