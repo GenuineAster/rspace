@@ -35,11 +35,8 @@ fn main() {
 				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
 
 				for j in i+1..planets.len() {
-					let dist_vec = planets[i].position - planets[j].position;
-					if dist_vec.length2() < (planets[i].radius + planets[j].radius).powi(2) {
-						planets[i].velocity = -planets[i].velocity;
-						planets[j].velocity = -planets[j].velocity;
-					}
+					let (planets_i, planets_j) = planets.split_at_mut(i+1);
+					planets_i[i].handle_collision(&mut planets_j[j-i-1]);
 				}
 
 				ellipse(
@@ -87,12 +84,24 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 }
 
 impl Entity<f64> {
+	#[inline(always)]
 	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.position = self.position + self.velocity * deltatime;
 		self.velocity = self.velocity + self.acceleration * deltatime;
 		self
 	}
 
+	#[inline(always)]
+	fn handle_collision(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
+		let dist_vec = self.position - other.position;
+		if dist_vec.length2() < (self.radius + other.radius).powi(2) {
+			self.velocity = -self.velocity;
+			other.velocity = -other.velocity;
+		}
+		self
+	}
+
+	#[inline(always)]
 	fn handle_wall_collision(&mut self) -> &mut Entity<f64> {
 		if self.position.x - self.radius < 0.0 {
 			self.velocity.x = -self.velocity.x;

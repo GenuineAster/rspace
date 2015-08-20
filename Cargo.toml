@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Mischa Aster Alff <mischa.alff@gmail.com>"]
 
 [dependencies]
-piston2d-graphics = "0.4.1"
-piston2d-opengl_graphics = "0.6.0"
-piston_window = "0.15.0"
+piston2d-graphics = "*"
+piston2d-opengl_graphics = "*"
+piston_window = "*"
 num = "*"
 rand = "*"
