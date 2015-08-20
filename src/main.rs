@@ -1,4 +1,7 @@
+#![feature(test)]
+
 extern crate num;
+extern crate test;
 extern crate rand;
 extern crate graphics;
 extern crate piston_window;
@@ -189,4 +192,46 @@ impl PartialOrd for Vec2<f64> {
 		}
 		return None;
 	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::gen_planets;
+	use test::Bencher;
+
+
+	static BENCH_PLANETS : u32 = 1000;
+
+	#[bench]
+	fn bench_planet_collision_func(b: &mut Bencher) {
+		let mut planets = gen_planets(BENCH_PLANETS);
+		b.iter(||
+			for i in 0..planets.len() {
+				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
+
+				for j in i+1..planets.len() {
+					let (planets_i, planets_j) = planets.split_at_mut(i+1);
+					planets_i[i].handle_collision(&mut planets_j[j-i-1]);
+				}
+			}
+		)
+	}
+
+	#[bench]
+	fn bench_planet_collision_inline(b: &mut Bencher) {
+		let mut planets = gen_planets(BENCH_PLANETS);
+		b.iter(|| 
+			for i in 0..planets.len() {
+				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
+
+				for j in i+1..planets.len() {
+					let dist_vec = planets[i].position - planets[j].position;
+					if dist_vec.length2() < (planets[i].radius + planets[j].radius).powi(2) {
+						planets[i].velocity = -planets[i].velocity;
+						planets[j].velocity = -planets[j].velocity;
+					}
+				}
+			}
+		)
+	}	
 }
