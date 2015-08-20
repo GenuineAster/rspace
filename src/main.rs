@@ -30,17 +30,21 @@ fn main() {
 	let window : PistonWindow = WindowSettings::new("space", [600, 600]).exit_on_esc(true).build().unwrap();
 	
 	let mut planets = gen_planets(10);
+	let step_time = 0.2;
 
 	for e in window {
 		e.draw_2d(|context, device| {
 			clear([0.0, 0.0, 0.0, 1.0], device);
 			for i in 0..planets.len() {
-				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
+				planets[i].integrate(step_time/3.0).handle_wall_collision()
+					.integrate(step_time/3.0);
 
 				for j in i+1..planets.len() {
 					let (planets_i, planets_j) = planets.split_at_mut(i+1);
 					planets_i[i].handle_collision(&mut planets_j[j-i-1]);
 				}
+
+				planets[i].integrate(step_time/3.0);
 
 				ellipse(
 					[1.0, 0.0, 0.0, 1.0],
