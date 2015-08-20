@@ -8,7 +8,6 @@ extern crate piston_window;
 extern crate opengl_graphics;
 
 use num::traits::*;
-use piston_window::*;
 use rand::distributions::{IndependentSample, Range};
 
 #[derive(Clone,Copy)]
@@ -26,6 +25,10 @@ struct Entity<T> {
 	radius : T
 }
 
+#[cfg(not(test))]
+use piston_window::*;
+
+#[cfg(not(test))]
 fn main() {
 	let window : PistonWindow = WindowSettings::new("space", [600, 600]).exit_on_esc(true).build().unwrap();
 	
@@ -259,23 +262,4 @@ mod tests {
 			}
 		)
 	}
-
-	#[bench]
-	fn bench_planet_collision_inline(b: &mut Bencher) {
-		let mut planets = gen_planets(BENCH_PLANETS);
-		b.iter(|| 
-			for i in 0..planets.len() {
-				planets[i].integrate(0.01).handle_wall_collisions();
-
-				for j in i+1..planets.len() {
-					if planets[i].collides(&planets[j]) {
-						let new_i = planets[i].get_state_after_collision(planets[j]);
-						let new_j = planets[j].get_state_after_collision(planets[i]);
-						planets[i] = new_i;
-						planets[j] = new_j;
-					}
-				}
-			}
-		)
-	}	
 }
