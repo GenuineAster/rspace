@@ -45,8 +45,10 @@ fn main() {
 					planets_i[i].integrate(step_time/3.0).handle_wall_collisions().handle_collisions(planets_j).apply_gravity_multi(planets_j);
 				}
 
+				let m = planets[i].get_momentum().length() as f32;
+
 				ellipse(
-					[1.0, 0.0, 0.0, 1.0],
+					[m*10.0, m*5.0,	m*2.0 + 0.15, 1.0],
                     [
                     	planets[i].position.x*(e.size().width as f64) - planets[i].radius*(e.size().width as f64),
                     	planets[i].position.y*(e.size().height as f64) - planets[i].radius*(e.size().height as f64),
@@ -93,6 +95,9 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 }
 
 impl Entity<f64> {
+	#[inline(always)]
+	fn get_momentum(&self) -> Vec2<f64> { self.velocity * self.mass }
+
 	#[inline(always)]
 	fn set_acceleration(&mut self, acceleration : Vec2<f64>) -> &mut Entity<f64> {
 		self.acceleration = acceleration;
@@ -207,6 +212,10 @@ impl Entity<f64> {
 impl Vec2<f64> {
 	fn length2(&self) -> f64 {
 		self.x * self.x + self.y * self.y
+	}
+
+	fn length(&self) -> f64 {
+		self.length2().sqrt()
 	}
 }
 
