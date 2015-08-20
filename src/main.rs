@@ -297,7 +297,7 @@ mod tests {
 		b.iter(||
 			for i in 0..planets.len() {
 				let (planets_i, planets_j) = planets.split_at_mut(i+1);
-				planets_i[i].integrate(0.01).handle_wall_collisions().handle_collisions(planets_j);
+				planets_i[i].integrate(0.01).handle_wall_collisions().handle_collisions(planets_j).apply_gravity_multi(planets_j);
 			}
 		)
 	}
