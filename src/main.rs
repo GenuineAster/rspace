@@ -18,10 +18,16 @@ use piston_window::*;
 
 #[cfg(not(test))]
 fn main() {
-	let window : PistonWindow = WindowSettings::new("space", [600, 600])
+	let window_settings = WindowSettings::new("space", [600, 600])
+	    .opengl(opengl_graphics::OpenGL::V2_1);
+	let (ma, mi) = window_settings.get_maybe_opengl().unwrap().get_major_minor();
+	let window : PistonWindow = window_settings
 		.exit_on_esc(true)
 		.build()
 		.unwrap();
+
+	println!("OpenGL version: {}.{}", ma, mi);
+
 	
 	let mut planets = gen_planets(50);
 	let step_time = 3.0;
