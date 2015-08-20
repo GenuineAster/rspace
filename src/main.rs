@@ -36,15 +36,10 @@ fn main() {
 		e.draw_2d(|context, device| {
 			clear([0.0, 0.0, 0.0, 1.0], device);
 			for i in 0..planets.len() {
-				planets[i].integrate(step_time/3.0).handle_wall_collision()
-					.integrate(step_time/3.0);
-
-				for j in i+1..planets.len() {
+				{
 					let (planets_i, planets_j) = planets.split_at_mut(i+1);
-					planets_i[i].handle_collision(&mut planets_j[j-i-1]);
+					planets_i[i].integrate(step_time/3.0).handle_wall_collisions().handle_collisions(planets_j);
 				}
-
-				planets[i].integrate(step_time/3.0);
 
 				ellipse(
 					[1.0, 0.0, 0.0, 1.0],
@@ -92,6 +87,24 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 
 impl Entity<f64> {
 	#[inline(always)]
+	fn set_acceleration(&mut self, acceleration : Vec2<f64>) -> &mut Entity<f64> {
+		self.acceleration = acceleration;
+		self
+	}
+
+	#[inline(always)]
+	fn integrate_position(&mut self, deltatime : f64) -> &mut Entity<f64> {
+		self.position = self.position + self.velocity * deltatime;
+		self
+	}
+
+	#[inline(always)]
+	fn integrate_velocity(&mut self, deltatime : f64) -> &mut Entity<f64> {
+		self.velocity = self.velocity + self.acceleration * deltatime;
+		self
+	}
+
+	#[inline(always)]
 	fn get_state_after_collision(mut self, other : Entity<f64>) -> Entity<f64> {
 		let numerator = self.velocity * (self.mass - other.mass) + (other.velocity * 2.0 * other.mass);
 		let denominator = self.mass + other.mass;
@@ -99,19 +112,20 @@ impl Entity<f64> {
 		self
 	}
 
+	#[inline(always)]
+	fn collides(&self, other : &Entity<f64>) -> bool {
+		(self.position - other.position).length2() < (self.radius + other.radius).powi(2)
+	}
+
 
 	#[inline(always)]
 	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
-		self.position = self.position + self.velocity * deltatime;
-		self.velocity = self.velocity + self.acceleration * deltatime;
-		self.acceleration = Vec2 {x:0.0, y:0.0};
-		self
+		self.integrate_position(deltatime).integrate_velocity(deltatime).set_acceleration(Vec2{x:0.0, y:0.0})
 	}
 
 	#[inline(always)]
 	fn handle_collision(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
-		let dist_vec = self.position - other.position;
-		if dist_vec.length2() < (self.radius + other.radius).powi(2) {
+		if self.collides(other) {
 			let new_self = self.get_state_after_collision(*other);
 			let new_other = other.get_state_after_collision(*self);
 			*self = new_self;
@@ -121,7 +135,15 @@ impl Entity<f64> {
 	}
 
 	#[inline(always)]
-	fn handle_wall_collision(&mut self) -> &mut Entity<f64> {
+	fn handle_collisions(&mut self, others : &mut [Entity<f64>]) -> &mut Entity<f64> {
+		for other in others {
+			self.handle_collision(other);
+		}
+		self
+	}
+
+	#[inline(always)]
+	fn handle_wall_collisions(&mut self) -> &mut Entity<f64> {
 		if self.position.x - self.radius < 0.0 {
 			self.velocity.x = -self.velocity.x;
 			self.position.x = 0.0+self.radius;
@@ -232,12 +254,8 @@ mod tests {
 		let mut planets = gen_planets(BENCH_PLANETS);
 		b.iter(||
 			for i in 0..planets.len() {
-				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
-
-				for j in i+1..planets.len() {
-					let (planets_i, planets_j) = planets.split_at_mut(i+1);
-					planets_i[i].handle_collision(&mut planets_j[j-i-1]);
-				}
+				let (planets_i, planets_j) = planets.split_at_mut(i+1);
+				planets_i[i].integrate(0.01).handle_wall_collisions().handle_collisions(planets_j);
 			}
 		)
 	}
@@ -247,13 +265,14 @@ mod tests {
 		let mut planets = gen_planets(BENCH_PLANETS);
 		b.iter(|| 
 			for i in 0..planets.len() {
-				planets[i].integrate(0.01).handle_wall_collision().integrate(0.01);
+				planets[i].integrate(0.01).handle_wall_collisions();
 
 				for j in i+1..planets.len() {
-					let dist_vec = planets[i].position - planets[j].position;
-					if dist_vec.length2() < (planets[i].radius + planets[j].radius).powi(2) {
-						planets[i].velocity = -planets[i].velocity;
-						planets[j].velocity = -planets[j].velocity;
+					if planets[i].collides(&planets[j]) {
+						let new_i = planets[i].get_state_after_collision(planets[j]);
+						let new_j = planets[j].get_state_after_collision(planets[i]);
+						planets[i] = new_i;
+						planets[j] = new_j;
 					}
 				}
 			}
