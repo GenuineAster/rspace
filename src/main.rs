@@ -3,6 +3,7 @@
 extern crate num;
 extern crate test;
 extern crate rand;
+extern crate time;
 extern crate graphics;
 extern crate piston_window;
 extern crate opengl_graphics;
@@ -17,6 +18,12 @@ use physics::vec2::*;
 use piston_window::*;
 
 #[cfg(not(test))]
+use std::io::*;
+
+#[cfg(not(test))]
+use std::fs::File;
+
+#[cfg(not(test))]
 fn main() {
 	let window_settings = WindowSettings::new("space", [600, 600])
 	    .opengl(opengl_graphics::OpenGL::V2_1);
@@ -28,9 +35,11 @@ fn main() {
 
 	println!("OpenGL version: {}.{}", ma, mi);
 
-	
 	let mut planets = gen_planets(50);
 	let step_time = 3.0;
+
+	let (mut time, start) = (time::precise_time_s(),time::precise_time_s());
+	let mut plot = File::create("plot.txt").unwrap();
 
 	for e in window {
 		e.draw_2d(|context, device| {
@@ -44,13 +53,16 @@ fn main() {
 					            .apply_gravity_multi(planets_j);
 				}
 
-				{
+				if time::precise_time_s() - time > 0.01 {
+					time = time::precise_time_s();
 					let total_momentum : f64 = planets.iter()
 						.map(
 							|&planet| planet.get_momentum().length()
 						).fold(0.0,|acc, momentum| acc + momentum);
 
-					println!("Total momentum in system: {}", total_momentum);
+					print!("Total momentum in system: {}\r", total_momentum);
+					write!(&mut plot, "{} {}\n", time::precise_time_s()-start, total_momentum).unwrap();
+					stdout().flush().unwrap();
 				}
 
 				{
@@ -75,6 +87,8 @@ fn main() {
 			}
 		});
 	}
+	plot.flush().unwrap();
+	println!("");
 }
 
 use num::traits::*;

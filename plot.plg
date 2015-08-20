@@ -1,0 +1,4 @@
+set terminal png giant size 1920, 1080
+set xlabel "time (s)"
+set ylabel "System's Total Magnitude of Momentum"
+plot datafile with lines
