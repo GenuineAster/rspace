@@ -38,8 +38,10 @@ fn main() {
 					            .apply_gravity_multi(planets_j);
 				}
 
+                let base = 0.06;
+
 				let m = planets[i].get_momentum().length() as f32;
-				let color = [m*10.0, m*5.0,	m*2.0 + 0.15, 1.0];
+				let color = [m*10.0 + base, m*5.0 + base, m*2.0 + 0.15 + base, 1.0];
 				let e_size = Vec2 {x: e.size().width as f64, y: e.size().height as f64};
 
 				let position = planets[i].position * e_size - e_size*planets[i].radius;
