@@ -47,10 +47,10 @@ fn main() {
 				ellipse(
 					[1.0, 0.0, 0.0, 1.0],
                     [
-                    	planets[i].position.x*(e.size().width as f64),
-                    	planets[i].position.y*(e.size().height as f64),
-                    	planets[i].radius*(e.size().width as f64),
-                    	planets[i].radius*(e.size().height as f64)
+                    	planets[i].position.x*(e.size().width as f64) - planets[i].radius*(e.size().width as f64),
+                    	planets[i].position.y*(e.size().height as f64) - planets[i].radius*(e.size().height as f64),
+                    	planets[i].radius*(e.size().width as f64)*2.0,
+                    	planets[i].radius*(e.size().height as f64)*2.0
                     ],
                     context.transform, device
                 );
