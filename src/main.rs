@@ -16,6 +16,7 @@ struct Vec2<T> {
 	y : T
 }
 
+
 #[derive(Clone,Copy)]
 struct Entity<T> {
 	position : Vec2<T>,
@@ -98,40 +99,40 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 }
 
 impl Entity<f64> {
-	#[inline(always)]
+	#[inline]
 	fn get_momentum(&self) -> Vec2<f64> { self.velocity * self.mass }
 
-	#[inline(always)]
+	#[inline]
 	fn set_acceleration(&mut self, acceleration : Vec2<f64>) -> &mut Entity<f64> {
 		self.acceleration = acceleration;
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn apply_force(&mut self, force : Vec2<f64>) -> &mut Entity<f64> {
 		self.force = self.force + force;
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn set_force(&mut self, force : Vec2<f64>) -> &mut Entity<f64> {
 		self.force = force;
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn integrate_position(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.position = self.position + self.velocity * deltatime;
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn integrate_velocity(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.velocity = self.velocity + (self.acceleration+(self.force/self.mass)) * deltatime;
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn get_state_after_collision(mut self, other : Entity<f64>) -> Entity<f64> {
 		let numerator = self.velocity * (self.mass - other.mass) + (other.velocity * 2.0 * other.mass);
 		let denominator = self.mass + other.mass;
@@ -139,13 +140,13 @@ impl Entity<f64> {
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn collides(&self, other : &Entity<f64>) -> bool {
 		(self.position - other.position).length2() < (self.radius + other.radius).powi(2)
 	}
 
 
-	#[inline(always)]
+	#[inline]
 	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.integrate_position(deltatime)
 		    .integrate_velocity(deltatime)
@@ -153,7 +154,7 @@ impl Entity<f64> {
 		    .set_force(Vec2{x:0.0, y:0.0})
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn handle_collision(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
 		if self.collides(other) {
 			let new_self = self.get_state_after_collision(*other);
@@ -164,7 +165,7 @@ impl Entity<f64> {
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn handle_collisions(&mut self, others : &mut [Entity<f64>]) -> &mut Entity<f64> {
 		for other in others {
 			self.handle_collision(other);
@@ -172,7 +173,7 @@ impl Entity<f64> {
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn apply_gravity(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
 		static G : f64 = 6.67384 * 1e-11;
 		let delta = self.position - other.position;
@@ -184,7 +185,7 @@ impl Entity<f64> {
 		self
 	}
 
-	#[inline(always)]
+	#[inline]
 	fn apply_gravity_multi(&mut self, others : &mut [Entity<f64>]) -> &mut Entity<f64> {
 		for other in others {
 			self.apply_gravity(other);
@@ -192,7 +193,6 @@ impl Entity<f64> {
 		self
 	}
 
-	#[inline(always)]
 	fn handle_wall_collisions(&mut self) -> &mut Entity<f64> {
 		if self.position.x - self.radius < 0.0 {
 			self.velocity.x = -self.velocity.x;
