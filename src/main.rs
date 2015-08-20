@@ -32,7 +32,7 @@ use piston_window::*;
 fn main() {
 	let window : PistonWindow = WindowSettings::new("space", [600, 600]).exit_on_esc(true).build().unwrap();
 	
-	let mut planets = gen_planets(10);
+	let mut planets = gen_planets(50);
 	let step_time = 0.2;
 
 	for e in window {
@@ -63,7 +63,7 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 	let mut ret : Vec<Entity<f64>> = vec![];
 	let mut rng = rand::thread_rng();
 	let acc_range = Range::new(-1.0, 1.0);
-	let rad_range = Range::new(5.0/1000.0, 25.0/1000.0);
+	let rad_range = Range::new(1.0/1000.0, 10.0/1000.0);
 	for _ in 0..num_planets {
 		let rad_mass = rad_range.ind_sample(&mut rng);
 		ret.push(
@@ -80,7 +80,7 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 					x:acc_range.ind_sample(&mut rng),
 					y:acc_range.ind_sample(&mut rng)
 				},
-				mass:rad_mass,
+				mass:rad_mass*rad_mass,
 				radius:rad_mass
 			}
 		)
