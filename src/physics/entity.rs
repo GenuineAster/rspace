@@ -88,7 +88,7 @@ impl Entity<f64> {
 
 	#[inline]
 	pub fn apply_gravity(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
-		static G : f64 = 6.67384 * 1e-11;
+		const G : f64 = 6.67384 * 1e-11;
 		let delta = self.position - other.position;
 		let r2 = (delta).length2();
 		let dir = delta / r2.sqrt();
@@ -110,14 +110,16 @@ impl Entity<f64> {
 		if self.position.x - self.radius < 0.0 {
 			self.velocity.x = -self.velocity.x;
 			self.position.x = 0.0+self.radius;
-		} else if self.position.x + self.radius > 1.0 {
+		}
+        else if self.position.x + self.radius > 1.0 {
 			self.velocity.x = -self.velocity.x;
 			self.position.x = 1.0-self.radius;
 		}
 		if self.position.y - self.radius < 0.0 {
 			self.velocity.y = -self.velocity.y;
 			self.position.y = 0.0+self.radius;
-		} else if  self.position.y + self.radius > 1.0 {
+		}
+        else if  self.position.y + self.radius > 1.0 {
 			self.velocity.y = -self.velocity.y;
 			self.position.y = 1.0-self.radius;
 		}
