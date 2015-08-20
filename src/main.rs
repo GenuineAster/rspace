@@ -92,6 +92,15 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 
 impl Entity<f64> {
 	#[inline(always)]
+	fn get_state_after_collision(mut self, other : Entity<f64>) -> Entity<f64> {
+		let numerator = self.velocity * (self.mass - other.mass) + (other.velocity * 2.0 * other.mass);
+		let denominator = self.mass + other.mass;
+		self.velocity = numerator / denominator;
+		self
+	}
+
+
+	#[inline(always)]
 	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.position = self.position + self.velocity * deltatime;
 		self.velocity = self.velocity + self.acceleration * deltatime;
@@ -103,8 +112,10 @@ impl Entity<f64> {
 	fn handle_collision(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
 		let dist_vec = self.position - other.position;
 		if dist_vec.length2() < (self.radius + other.radius).powi(2) {
-			self.velocity = -self.velocity;
-			other.velocity = -other.velocity;
+			let new_self = self.get_state_after_collision(*other);
+			let new_other = other.get_state_after_collision(*self);
+			*self = new_self;
+			*other = new_other;
 		}
 		self
 	}
@@ -176,6 +187,15 @@ impl Mul<f64> for Vec2<f64> {
 
 	fn mul(self, rhs:f64) -> Self::Output {
 		return Vec2 { x:self.x * rhs, y:self.y * rhs};
+	}
+}
+
+use std::ops::Div;
+impl Div<f64> for Vec2<f64> {
+	type Output = Vec2<f64>;
+
+	fn div(self, rhs:f64) -> Self::Output {
+		return Vec2 { x:self.x / rhs, y:self.y / rhs};
 	}
 }
 
