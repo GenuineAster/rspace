@@ -90,7 +90,7 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 			}
 		)
 	}
-	return ret;
+    ret
 }
 
 

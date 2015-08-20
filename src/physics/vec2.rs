@@ -32,7 +32,7 @@ impl<N: Num + Sub> Sub for Vec2<N> {
 	type Output = Vec2<N>;
 
 	fn sub(self, rhs:Self::Output) -> Self::Output {
-		return Vec2 { x:self.x - rhs.x, y:self.y - rhs.y };
+		Vec2 { x:self.x - rhs.x, y:self.y - rhs.y }
 	}
 }
 
@@ -41,7 +41,7 @@ impl<N: Signed + Neg> Neg for Vec2<N> {
 	type Output = Vec2<N>;
 
 	fn neg(self) -> Self::Output {
-		return Vec2 { x: -self.x, y: -self.y};
+		Vec2 { x: -self.x, y: -self.y}
 	}
 }
 
@@ -67,7 +67,7 @@ impl<N: Num + Div + Copy> Div<N> for Vec2<N> {
 	type Output = Vec2<N>;
 
 	fn div(self, rhs:N) -> Self::Output {
-		return Vec2 { x:self.x / rhs, y:self.y / rhs};
+		Vec2 { x:self.x / rhs, y:self.y / rhs}
 	}
 }
 
@@ -83,10 +83,10 @@ use std::cmp::PartialOrd;
 impl<N: Num + PartialOrd> PartialOrd for Vec2<N> {
 	fn partial_cmp(&self, rhs:&Vec2<N>) -> Option<Ordering> {
 		if self.x > rhs.x && self.y > rhs.y {
-			return Some(Ordering::Greater);
+			return Some(Ordering::Greater)
 		} else if self.x < rhs.x && self.y < rhs.y {
-			return Some(Ordering::Less);
+			return Some(Ordering::Less)
 		}
-		return None;
+		None
 	}
 }
