@@ -18,10 +18,13 @@ use piston_window::*;
 
 #[cfg(not(test))]
 fn main() {
-	let window : PistonWindow = WindowSettings::new("space", [600, 600]).exit_on_esc(true).build().unwrap();
+	let window : PistonWindow = WindowSettings::new("space", [600, 600])
+		.exit_on_esc(true)
+		.build()
+		.unwrap();
 	
 	let mut planets = gen_planets(50);
-	let step_time = 10.0;
+	let step_time = 3.0;
 
 	for e in window {
 		e.draw_2d(|context, device| {
@@ -29,7 +32,10 @@ fn main() {
 			for i in 0..planets.len() {
 				{
 					let (planets_i, planets_j) = planets.split_at_mut(i+1);
-					planets_i[i].integrate(step_time/3.0).handle_wall_collisions().handle_collisions(planets_j).apply_gravity_multi(planets_j);
+					planets_i[i].integrate(step_time)
+					            .handle_wall_collisions()
+					            .handle_collisions(planets_j)
+					            .apply_gravity_multi(planets_j);
 				}
 
 				let m = planets[i].get_momentum().length() as f32;
@@ -100,7 +106,10 @@ mod tests {
 		b.iter(||
 			for i in 0..planets.len() {
 				let (planets_i, planets_j) = planets.split_at_mut(i+1);
-				planets_i[i].integrate(0.01).handle_wall_collisions().handle_collisions(planets_j).apply_gravity_multi(planets_j);
+				planets_i[i].integrate(0.01)
+				            .handle_wall_collisions()
+				            .handle_collisions(planets_j)
+				            .apply_gravity_multi(planets_j);
 			}
 		)
 	}
