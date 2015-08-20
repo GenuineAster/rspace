@@ -44,30 +44,34 @@ fn main() {
 					            .apply_gravity_multi(planets_j);
 				}
 
-				let base = 0.06;
+				{
+					let total_momentum : f64 = planets.iter()
+						.map(
+							|&planet| planet.get_momentum().length()
+						).fold(0.0,|acc, momentum| acc + momentum);
 
-				let m = planets[i].get_momentum().length() as f32;
-				let color = [m*10.0 + base, m*5.0 + base, m*2.0 + 0.15 + base, 1.0];
-				let e_size = Vec2 {x: e.size().width as f64, y: e.size().height as f64};
+					println!("Total momentum in system: {}", total_momentum);
+				}
 
-				let position = planets[i].position * e_size - e_size*planets[i].radius;
-				let size     = e_size * planets[i].radius * 2.0;
+				{
+					let base = 0.06;
 
-				let total_momentum : f64 = planets.iter()
-					.map(
-						|&planet| planet.get_momentum().length()
-					).fold(0.0,|acc, momentum| acc + momentum);
+					let m = planets[i].get_momentum().length() as f32;
+					let color = [m*10.0 + base, m*5.0 + base, m*2.0 + 0.15 + base, 1.0];
+					let e_size = Vec2 {x: e.size().width as f64, y: e.size().height as f64};
 
-				println!("Total momentum in system: {}", total_momentum);
+					let position = planets[i].position * e_size - e_size*planets[i].radius;
+					let size     = e_size * planets[i].radius * 2.0;
 
-				ellipse(
-					color,
-					[
-						position.x, position.y,
-						size.x, size.y
-					],
-					context.transform, device
-				);
+					ellipse(
+						color,
+						[
+							position.x, position.y,
+							size.x, size.y
+						],
+						context.transform, device
+					);
+				}
 			}
 		});
 	}
