@@ -91,6 +91,7 @@ impl Entity<f64> {
 	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.position = self.position + self.velocity * deltatime;
 		self.velocity = self.velocity + self.acceleration * deltatime;
+		self.acceleration = Vec2 {x:0.0, y:0.0};
 		self
 	}
 
