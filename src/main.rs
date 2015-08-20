@@ -53,6 +53,13 @@ fn main() {
 				let position = planets[i].position * e_size - e_size*planets[i].radius;
 				let size     = e_size * planets[i].radius * 2.0;
 
+				let total_momentum : f64 = planets.iter()
+					.map(
+						|&planet| planet.get_momentum().length()
+					).fold(0.0,|acc, momentum| acc + momentum);
+
+				println!("Total momentum in system: {}", total_momentum);
+
 				ellipse(
 					color,
 					[
