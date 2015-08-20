@@ -21,6 +21,7 @@ struct Entity<T> {
 	position : Vec2<T>,
 	velocity : Vec2<T>,
 	acceleration : Vec2<T>,
+	force : Vec2<T>,
 	mass : T,
 	radius : T
 }
@@ -33,7 +34,7 @@ fn main() {
 	let window : PistonWindow = WindowSettings::new("space", [600, 600]).exit_on_esc(true).build().unwrap();
 	
 	let mut planets = gen_planets(50);
-	let step_time = 0.2;
+	let step_time = 10.0;
 
 	for e in window {
 		e.draw_2d(|context, device| {
@@ -41,7 +42,7 @@ fn main() {
 			for i in 0..planets.len() {
 				{
 					let (planets_i, planets_j) = planets.split_at_mut(i+1);
-					planets_i[i].integrate(step_time/3.0).handle_wall_collisions().handle_collisions(planets_j);
+					planets_i[i].integrate(step_time/3.0).handle_wall_collisions().handle_collisions(planets_j).apply_gravity_multi(planets_j);
 				}
 
 				ellipse(
@@ -62,7 +63,6 @@ fn main() {
 fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 	let mut ret : Vec<Entity<f64>> = vec![];
 	let mut rng = rand::thread_rng();
-	let acc_range = Range::new(-1.0, 1.0);
 	let rad_range = Range::new(1.0/1000.0, 10.0/1000.0);
 	for _ in 0..num_planets {
 		let rad_mass = rad_range.ind_sample(&mut rng);
@@ -77,10 +77,14 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 					y:0.0
 				},
 				acceleration: Vec2 {
-					x:acc_range.ind_sample(&mut rng),
-					y:acc_range.ind_sample(&mut rng)
+					x:0.0,
+					y:0.0
 				},
-				mass:rad_mass*rad_mass,
+				force: Vec2 {
+					x:0.0,
+					y:0.0
+				},
+				mass:(rad_mass*1000.0).powi(2),
 				radius:rad_mass
 			}
 		)
@@ -96,6 +100,18 @@ impl Entity<f64> {
 	}
 
 	#[inline(always)]
+	fn apply_force(&mut self, force : Vec2<f64>) -> &mut Entity<f64> {
+		self.force = self.force + force;
+		self
+	}
+
+	#[inline(always)]
+	fn set_force(&mut self, force : Vec2<f64>) -> &mut Entity<f64> {
+		self.force = force;
+		self
+	}
+
+	#[inline(always)]
 	fn integrate_position(&mut self, deltatime : f64) -> &mut Entity<f64> {
 		self.position = self.position + self.velocity * deltatime;
 		self
@@ -103,7 +119,7 @@ impl Entity<f64> {
 
 	#[inline(always)]
 	fn integrate_velocity(&mut self, deltatime : f64) -> &mut Entity<f64> {
-		self.velocity = self.velocity + self.acceleration * deltatime;
+		self.velocity = self.velocity + (self.acceleration+(self.force/self.mass)) * deltatime;
 		self
 	}
 
@@ -123,7 +139,10 @@ impl Entity<f64> {
 
 	#[inline(always)]
 	fn integrate(&mut self, deltatime : f64) -> &mut Entity<f64> {
-		self.integrate_position(deltatime).integrate_velocity(deltatime).set_acceleration(Vec2{x:0.0, y:0.0})
+		self.integrate_position(deltatime)
+		    .integrate_velocity(deltatime)
+		    .set_acceleration(Vec2{x:0.0, y:0.0})
+		    .set_force(Vec2{x:0.0, y:0.0})
 	}
 
 	#[inline(always)]
@@ -141,6 +160,26 @@ impl Entity<f64> {
 	fn handle_collisions(&mut self, others : &mut [Entity<f64>]) -> &mut Entity<f64> {
 		for other in others {
 			self.handle_collision(other);
+		}
+		self
+	}
+
+	#[inline(always)]
+	fn apply_gravity(&mut self, other : &mut Entity<f64>) -> &mut Entity<f64> {
+		static G : f64 = 6.67384 * 1e-11;
+		let delta = self.position - other.position;
+		let r2 = (delta).length2();
+		let dir = delta / r2.sqrt();
+		let f = G * (self.mass * other.mass) / r2;
+		self.apply_force(dir * -f);
+		other.apply_force(dir * f);
+		self
+	}
+
+	#[inline(always)]
+	fn apply_gravity_multi(&mut self, others : &mut [Entity<f64>]) -> &mut Entity<f64> {
+		for other in others {
+			self.apply_gravity(other);
 		}
 		self
 	}
