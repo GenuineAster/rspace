@@ -111,7 +111,7 @@ impl Entity<f64> {
 			self.velocity.x = -self.velocity.x;
 			self.position.x = 0.0+self.radius;
 		}
-        else if self.position.x + self.radius > 1.0 {
+		else if self.position.x + self.radius > 1.0 {
 			self.velocity.x = -self.velocity.x;
 			self.position.x = 1.0-self.radius;
 		}
@@ -119,7 +119,7 @@ impl Entity<f64> {
 			self.velocity.y = -self.velocity.y;
 			self.position.y = 0.0+self.radius;
 		}
-        else if  self.position.y + self.radius > 1.0 {
+		else if  self.position.y + self.radius > 1.0 {
 			self.velocity.y = -self.velocity.y;
 			self.position.y = 1.0-self.radius;
 		}

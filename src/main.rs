@@ -38,7 +38,7 @@ fn main() {
 					            .apply_gravity_multi(planets_j);
 				}
 
-                let base = 0.06;
+				let base = 0.06;
 
 				let m = planets[i].get_momentum().length() as f32;
 				let color = [m*10.0 + base, m*5.0 + base, m*2.0 + 0.15 + base, 1.0];
@@ -90,7 +90,7 @@ fn gen_planets(num_planets : u32) -> Vec<Entity<f64>> {
 			}
 		)
 	}
-    ret
+	ret
 }
 
 
