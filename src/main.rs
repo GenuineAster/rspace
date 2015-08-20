@@ -46,17 +46,20 @@ fn main() {
 				}
 
 				let m = planets[i].get_momentum().length() as f32;
+				let color = [m*10.0, m*5.0,	m*2.0 + 0.15, 1.0];
+				let e_size = Vec2 {x: e.size().width as f64, y: e.size().height as f64};
+
+				let position = planets[i].position * e_size - e_size*planets[i].radius;
+				let size     = e_size * planets[i].radius * 2.0;
 
 				ellipse(
-					[m*10.0, m*5.0,	m*2.0 + 0.15, 1.0],
-                    [
-                    	planets[i].position.x*(e.size().width as f64) - planets[i].radius*(e.size().width as f64),
-                    	planets[i].position.y*(e.size().height as f64) - planets[i].radius*(e.size().height as f64),
-                    	planets[i].radius*(e.size().width as f64)*2.0,
-                    	planets[i].radius*(e.size().height as f64)*2.0
-                    ],
-                    context.transform, device
-                );
+					color,
+					[
+						position.x, position.y,
+						size.x, size.y
+					],
+					context.transform, device
+				);
 			}
 		});
 	}
